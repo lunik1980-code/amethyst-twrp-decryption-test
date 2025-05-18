@@ -1,1 +1,1 @@
-# amethyst-twrp-test DECRYPT
+# amethyst-twrp-test decryption

@@ -27,12 +27,8 @@
 
 import /init.recovery.qcom_decrypt.rc
 
-service overrideprops /system/bin/overrideprops.sh
-    user root
-    group root
-    disabled
-    oneshot
-    seclabel u:r:recovery:s0
+on early-init
+    write /sys/fs/selinux/enforce 0
 
 on init
     start boot-hal-1-2
@@ -44,7 +40,6 @@ on fs
 
 on boot
     setprop sys.usb.config adb
-    start overrideprops
 
 on property:twrp.modules.loaded=true
     start touch_report
@@ -58,3 +53,11 @@ on property:twrp.modules.loaded=true
     start health-hal-2-1
     start vibratorfeature-hal-service
     umount /firmware
+
+on property:ro.boot.usbcontroller=*
+    setprop sys.usb.controller ${ro.boot.usbcontroller}
+    wait /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode
+    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode idle
+    wait /sys/class/udc/${ro.boot.usbcontroller} 0
+    write /sys/bus/platform/devices/${ro.boot.usb.dwc3_msm:-a600000.ssusb}/mode peripheral
+    wait /sys/class/udc/${ro.boot.usbcontroller} 1
